@@ -33,6 +33,6 @@ jobs:
 
       - name: Run bot
         run: |
-          python your_bot_script.py
+          python doxspot.py
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
