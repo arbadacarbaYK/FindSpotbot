@@ -1,4 +1,4 @@
-nname: LocationBot
+name: LocationBot
 
 on:
   push:
@@ -37,4 +37,3 @@ jobs:
           python doxspot.py
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-
