@@ -1,4 +1,5 @@
-from telegram import Update, MessageHandler, Filters, CallbackContext
+from telegram import Update, Filters
+from telegram.ext import MessageHandler, CallbackContext
 from PIL import Image
 import requests
 import json
