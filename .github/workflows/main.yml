@@ -1,4 +1,4 @@
-name: LocationBot
+nname: LocationBot
 
 on:
   push:
@@ -20,6 +20,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+           pip install --upgrade python-telegram-bot
            pip install -r requirements.txt
 
       - name: Set Telegram BOT token
@@ -36,3 +37,4 @@ jobs:
           python doxspot.py
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+
