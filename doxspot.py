@@ -1,5 +1,6 @@
 from telegram import Update, Filters
-from telegram.ext import MessageHandler, CallbackContext
+from telegram.ext import MessageHandler, CallbackContext, Updater
+
 from PIL import Image
 import requests
 import json
@@ -33,7 +34,7 @@ def handle_image(update: Update, context: CallbackContext) -> None:
         update.message.reply_text('No location data found in the image.')
 
 def main() -> None:
-    updater = Updater("YOUR_BOT_TOKEN")
+    updater = Updater("YOUR_BOT_TOKEN")  # Replace with your actual bot token
 
     dp = updater.dispatcher
 
