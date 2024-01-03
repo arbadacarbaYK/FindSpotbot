@@ -1,10 +1,9 @@
-import os
 from telegram import Update
-from telegram.ext import Updater
-from telegram.ext import MessageHandler, CallbackContext, filters
+from telegram.ext import Updater, MessageHandler, CallbackContext, filters
 from PIL import Image
 import requests
 import json
+import os  # Add this line to import the os module
 
 def start(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Send me a picture with location data.')
@@ -38,12 +37,12 @@ def handle_image(update: Update, context: CallbackContext) -> None:
         update.message.reply_text('No location data found in the image.')
 
 def main() -> None:
-    updater = Updater(os.getenv("TELEGRAM_BOT_TOKEN"))  
+    updater = Updater(os.getenv("YOUR_BOT_TOKEN"))  
 
     dp = updater.dispatcher
 
-    dp.add_handler(MessageHandler(Filters.photo & ~Filters.command, handle_image))
-    dp.add_handler(MessageHandler(Filters.command, start))
+    dp.add_handler(MessageHandler(filters.Filters.photo & ~filters.Filters.command, handle_image))
+    dp.add_handler(MessageHandler(filters.Filters.command, start))
 
     updater.start_polling()
 
