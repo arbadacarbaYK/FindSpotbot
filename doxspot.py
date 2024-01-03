@@ -1,6 +1,6 @@
 from telegram import Update
 from telegram.ext import MessageHandler, CallbackContext, Filters
-from PIL import Image
+from Pillow import Image
 import requests
 import json
 
