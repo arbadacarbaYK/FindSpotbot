@@ -37,7 +37,7 @@ def handle_image(update: Update, context: CallbackContext) -> None:
         update.message.reply_text('No location data found in the image.')
 
 def main() -> None:
-    updater = Updater("YOUR_BOT_TOKEN")  # Replace with your actual bot token
+    updater = Updater(os.getenv("TELEGRAM_BOT_TOKEN"))  
 
     dp = updater.dispatcher
 
