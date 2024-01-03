@@ -1,8 +1,9 @@
 from telegram import Update
-from telegram.ext import MessageHandler, Filters, CallbackContext, Updater
-import cv2
-import numpy as np
+from telegram.ext import MessageHandler, CallbackContext, Updater, CommandHandler
+from telegram.ext.filters import Filters
+from PIL import Image
 import requests
+import json
 
 def start(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Send me a picture with location data.')
