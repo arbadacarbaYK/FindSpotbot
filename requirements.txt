@@ -8,4 +8,5 @@ numpy==1.21.0
 exifread==2.3.0
 Pillow-SIMD==7.0.0.post3
 python-magic==0.4.24
+pyheif==0.5.1
 
