@@ -1,5 +1,5 @@
 from telegram import Update
-from telegram.ext import MessageHandler, CallbackContext, Filters
+from telegram.ext import MessageHandler, CallbackContext, filters
 from Pillow import Image
 import requests
 import json
