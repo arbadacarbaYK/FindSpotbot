@@ -3,11 +3,25 @@ from telegram.ext import Updater, MessageHandler, CallbackContext, filters
 import requests
 import json
 import os
-import exifread
+from PIL import Image
+from PIL.ExifTags import TAGS, GPSTAGS
 import io
 
 def start(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Send me a picture with location data.')
+
+def extract_gps_info(image):
+    try:
+        exif_data = image._getexif()
+        if exif_data is not None:
+            for tag, value in exif_data.items():
+                tag_name = TAGS.get(tag, tag)
+                if tag_name == 'GPSInfo':
+                    return {GPSTAGS.get(t, t): v for t, v in value.items()}
+        return None
+    except Exception as e:
+        print(f"Error extracting GPS info: {e}")
+        return None
 
 def handle_image(update: Update, context: CallbackContext) -> None:
     # Get the file ID of the photo
@@ -25,14 +39,16 @@ def handle_image(update: Update, context: CallbackContext) -> None:
     # Convert the bytes object to a BytesIO object
     image_io = io.BytesIO(response.content)
 
-    # Extract GPS coordinates from the image using exifread
-    tags = exifread.process_file(image_io)
+    # Open the image using Pillow
+    image = Image.open(image_io)
+
+    # Extract GPS coordinates from the image using Pillow
+    gps_info = extract_gps_info(image)
     
-    # Check if GPSInfo tags are present
-    if 'GPS GPSLatitude' in tags and 'GPS GPSLongitude' in tags:
-        # Extract latitude and longitude
-        latitude = tags['GPS GPSLatitude'].values[0]
-        longitude = tags['GPS GPSLongitude'].values[0]
+    # Check if GPSInfo is present
+    if gps_info:
+        latitude = gps_info.get('GPSLatitude')
+        longitude = gps_info.get('GPSLongitude')
 
         # Create a Google Maps link
         google_maps_link = f'https://www.google.com/maps?q={latitude},{longitude}'
@@ -40,9 +56,8 @@ def handle_image(update: Update, context: CallbackContext) -> None:
         # Reply with the location link
         update.message.reply_text(f'Location: {google_maps_link}')
     else:
-        # If GPSInfo tags are not present
+        # If GPSInfo is not present
         update.message.reply_text('No location data found in the image.')
-
 
 def main() -> None:
     updater = Updater(token=os.getenv("YOUR_BOT_TOKEN"))
