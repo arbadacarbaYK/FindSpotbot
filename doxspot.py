@@ -3,12 +3,10 @@ from telegram.ext import Updater, MessageHandler, CallbackContext, filters
 import requests
 import json
 import os
+import magic  # Import the 'magic' module for file type detection
 from PIL import Image, UnidentifiedImageError
 from PIL.ExifTags import TAGS, GPSTAGS
 import io
-import magic
-import pyheif
-import imghdr
 
 def start(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Send me a picture with location data.')
@@ -40,11 +38,11 @@ def handle_image(update: Update, context: CallbackContext) -> None:
     response = requests.get(file_url)
 
     try:
-        # Use imghdr to identify the file type
-        file_type = imghdr.what(None, response.content)
+        # Use python-magic to identify the file type
+        file_type = magic.Magic(mime=True).from_buffer(response.content.decode('ISO-8859-1').encode('utf-8'))
 
         # Check if the file is a supported image format
-        supported_formats = {'jpeg', 'png', 'gif', 'bmp', 'webp', 'tiff', 'heic'}
+        supported_formats = {'image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp', 'image/tiff', 'image/heic'}
         if file_type in supported_formats:
             # Convert the bytes object to a BytesIO object
             image_io = io.BytesIO(response.content)
