@@ -19,9 +19,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-           pip install --upgrade python-telegram-bot
-           pip install opencv-python==4.5.3.56
-           pip install mtcnn
+          pip install --upgrade python-telegram-bot==20.7
+          pip install opencv-python==4.5.3.56
+          pip install mtcnn
 
       - name: Set Telegram BOT token
         run: echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" >> $GITHUB_ENV
