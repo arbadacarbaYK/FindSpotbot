@@ -42,6 +42,8 @@ def handle_image(update: Update, context: CallbackContext) -> None:
         mime = magic.Magic()
         file_type = mime.from_buffer(response.content)
 
+        print(f"Detected file type: {file_type}")
+
         # Check if the file is an image
         if file_type.startswith('image'):
             # Convert the bytes object to a BytesIO object
@@ -68,7 +70,7 @@ def handle_image(update: Update, context: CallbackContext) -> None:
                 update.message.reply_text('No location data found in the image.')
         else:
             # If the file is not an image
-            update.message.reply_text('Please send a valid image.')
+            update.message.reply_text(f"Please send a valid image. Detected file type: {file_type}")
     except UnidentifiedImageError:
         # If the image cannot be identified
         update.message.reply_text('Cannot identify the image file. Please send a valid image.')
