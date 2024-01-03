@@ -3,7 +3,7 @@ from telegram.ext import Updater, MessageHandler, CallbackContext, filters
 import requests
 import json
 import os
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from PIL.ExifTags import TAGS, GPSTAGS
 import io
 
@@ -59,7 +59,7 @@ def handle_image(update: Update, context: CallbackContext) -> None:
         else:
             # If GPSInfo is not present
             update.message.reply_text('No location data found in the image.')
-    except PIL.UnidentifiedImageError:
+    except UnidentifiedImageError:
         # If the image cannot be identified
         update.message.reply_text('Cannot identify the image file. Please send a valid image.')
     except Exception as e:
