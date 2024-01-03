@@ -6,6 +6,7 @@ import os
 from PIL import Image, UnidentifiedImageError
 from PIL.ExifTags import TAGS, GPSTAGS
 import io
+import magic
 
 def start(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Send me a picture with location data.')
@@ -37,28 +38,37 @@ def handle_image(update: Update, context: CallbackContext) -> None:
     response = requests.get(file_url)
 
     try:
-        # Convert the bytes object to a BytesIO object
-        image_io = io.BytesIO(response.content)
+        # Use python-magic to identify the file type
+        mime = magic.Magic()
+        file_type = mime.from_buffer(response.content)
 
-        # Open the image using Pillow
-        image = Image.open(image_io)
+        # Check if the file is an image
+        if file_type.startswith('image'):
+            # Convert the bytes object to a BytesIO object
+            image_io = io.BytesIO(response.content)
 
-        # Extract GPS coordinates from the image using Pillow
-        gps_info = extract_gps_info(image)
+            # Open the image using Pillow
+            image = Image.open(image_io)
 
-        # Check if GPSInfo is present
-        if gps_info:
-            latitude = gps_info.get('GPSLatitude')
-            longitude = gps_info.get('GPSLongitude')
+            # Extract GPS coordinates from the image using Pillow
+            gps_info = extract_gps_info(image)
 
-            # Create a Google Maps link
-            google_maps_link = f'https://www.google.com/maps?q={latitude},{longitude}'
+            # Check if GPSInfo is present
+            if gps_info:
+                latitude = gps_info.get('GPSLatitude')
+                longitude = gps_info.get('GPSLongitude')
 
-            # Reply with the location link
-            update.message.reply_text(f'Location: {google_maps_link}')
+                # Create a Google Maps link
+                google_maps_link = f'https://www.google.com/maps?q={latitude},{longitude}'
+
+                # Reply with the location link
+                update.message.reply_text(f'Location: {google_maps_link}')
+            else:
+                # If GPSInfo is not present
+                update.message.reply_text('No location data found in the image.')
         else:
-            # If GPSInfo is not present
-            update.message.reply_text('No location data found in the image.')
+            # If the file is not an image
+            update.message.reply_text('Please send a valid image.')
     except UnidentifiedImageError:
         # If the image cannot be identified
         update.message.reply_text('Cannot identify the image file. Please send a valid image.')
