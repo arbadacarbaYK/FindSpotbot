@@ -9,7 +9,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -21,7 +20,8 @@ jobs:
       - name: Install dependencies
         run: |
            pip install --upgrade python-telegram-bot
-           pip install -r requirements.txt
+           pip install opencv-python==4.5.3.56
+           pip install mtcnn
 
       - name: Set Telegram BOT token
         run: echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" >> $GITHUB_ENV
