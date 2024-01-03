@@ -36,28 +36,35 @@ def handle_image(update: Update, context: CallbackContext) -> None:
     # Download the image
     response = requests.get(file_url)
 
-    # Convert the bytes object to a BytesIO object
-    image_io = io.BytesIO(response.content)
+    try:
+        # Convert the bytes object to a BytesIO object
+        image_io = io.BytesIO(response.content)
 
-    # Open the image using Pillow
-    image = Image.open(image_io)
+        # Open the image using Pillow
+        image = Image.open(image_io)
 
-    # Extract GPS coordinates from the image using Pillow
-    gps_info = extract_gps_info(image)
-    
-    # Check if GPSInfo is present
-    if gps_info:
-        latitude = gps_info.get('GPSLatitude')
-        longitude = gps_info.get('GPSLongitude')
+        # Extract GPS coordinates from the image using Pillow
+        gps_info = extract_gps_info(image)
 
-        # Create a Google Maps link
-        google_maps_link = f'https://www.google.com/maps?q={latitude},{longitude}'
+        # Check if GPSInfo is present
+        if gps_info:
+            latitude = gps_info.get('GPSLatitude')
+            longitude = gps_info.get('GPSLongitude')
 
-        # Reply with the location link
-        update.message.reply_text(f'Location: {google_maps_link}')
-    else:
-        # If GPSInfo is not present
-        update.message.reply_text('No location data found in the image.')
+            # Create a Google Maps link
+            google_maps_link = f'https://www.google.com/maps?q={latitude},{longitude}'
+
+            # Reply with the location link
+            update.message.reply_text(f'Location: {google_maps_link}')
+        else:
+            # If GPSInfo is not present
+            update.message.reply_text('No location data found in the image.')
+    except PIL.UnidentifiedImageError:
+        # If the image cannot be identified
+        update.message.reply_text('Cannot identify the image file. Please send a valid image.')
+    except Exception as e:
+        # Handle other exceptions
+        update.message.reply_text(f'Error processing the image: {e}')
 
 def main() -> None:
     updater = Updater(token=os.getenv("YOUR_BOT_TOKEN"))
