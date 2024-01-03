@@ -1,6 +1,5 @@
-from telegram import Update, Filters
-from telegram.ext import MessageHandler, CallbackContext, Updater
-
+from telegram import Update
+from telegram.ext import MessageHandler, Filters, CallbackContext, Updater
 from PIL import Image
 import requests
 import json
