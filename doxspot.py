@@ -7,6 +7,7 @@ from PIL import Image, UnidentifiedImageError
 from PIL.ExifTags import TAGS, GPSTAGS
 import io
 import magic
+import pyheif
 
 def start(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Send me a picture with location data.')
@@ -42,33 +43,45 @@ def handle_image(update: Update, context: CallbackContext) -> None:
         mime = magic.Magic()
         file_type = mime.from_buffer(response.content)
 
-        # Check if the file is an image
-        if file_type.startswith('image'):
+        # Check if the file is a HEIC image
+        if file_type == 'image/heic':
+            # Use pyheif to handle HEIC files
+            heif_file = pyheif.read_heif(response.content)
+            image = Image.frombytes(
+                heif_file.mode, 
+                heif_file.size, 
+                heif_file.data,
+                "raw",
+                heif_file.mode,
+                heif_file.stride,
+            )
+        elif file_type.startswith('image'):
             # Convert the bytes object to a BytesIO object
             image_io = io.BytesIO(response.content)
 
             # Open the image using Pillow
             image = Image.open(image_io)
-
-            # Extract GPS coordinates from the image using Pillow
-            gps_info = extract_gps_info(image)
-
-            # Check if GPSInfo is present
-            if gps_info:
-                latitude = gps_info.get('GPSLatitude')
-                longitude = gps_info.get('GPSLongitude')
-
-                # Create a Google Maps link
-                google_maps_link = f'https://www.google.com/maps?q={latitude},{longitude}'
-
-                # Reply with the location link
-                update.message.reply_text(f'Location: {google_maps_link}')
-            else:
-                # If GPSInfo is not present
-                update.message.reply_text('No location data found in the image.')
         else:
             # If the file is not an image
             update.message.reply_text(f"Please send a valid image. Detected file type: {file_type}")
+            return
+
+        # Extract GPS coordinates from the image using Pillow
+        gps_info = extract_gps_info(image)
+
+        # Check if GPSInfo is present
+        if gps_info:
+            latitude = gps_info.get('GPSLatitude')
+            longitude = gps_info.get('GPSLongitude')
+
+            # Create a Google Maps link
+            google_maps_link = f'https://www.google.com/maps?q={latitude},{longitude}'
+
+            # Reply with the location link
+            update.message.reply_text(f'Location: {google_maps_link}')
+        else:
+            # If GPSInfo is not present
+            update.message.reply_text('No location data found in the image.')
     except UnidentifiedImageError:
         # If the image cannot be identified
         update.message.reply_text('Cannot identify the image file. Please send a valid image.')
