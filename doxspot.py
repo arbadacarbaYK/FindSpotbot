@@ -1,28 +1,24 @@
 from telegram import Update
 from telegram.ext import Updater, MessageHandler, CallbackContext, filters
 import requests
-import json
 import os
-import magic  # Import the 'magic' module for file type detection
-from PIL import Image, UnidentifiedImageError
-from PIL.ExifTags import TAGS, GPSTAGS
+import magic
 import io
+import exifread
 
 def start(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Send me a picture with location data.')
 
 def extract_gps_info(image):
     try:
-        exif_data = image._getexif()
-        if exif_data is not None:
-            for tag, value in exif_data.items():
-                tag_name = TAGS.get(tag, tag)
-                if tag_name == 'GPSInfo':
-                    return {GPSTAGS.get(t, t): v for t, v in value.items()}
-        return None
+        tags = exifread.process_file(image)
+        if 'GPS GPSLatitude' in tags and 'GPS GPSLongitude' in tags:
+            latitude = tags['GPS GPSLatitude'].values[0]
+            longitude = tags['GPS GPSLongitude'].values[0]
+            return latitude, longitude
     except Exception as e:
         print(f"Error extracting GPS info: {e}")
-        return None
+    return None
 
 def handle_image(update: Update, context: CallbackContext) -> None:
     # Get the file ID of the photo
@@ -39,7 +35,7 @@ def handle_image(update: Update, context: CallbackContext) -> None:
 
     try:
         # Use python-magic to identify the file type
-        file_type = magic.Magic(mime=True).from_buffer(response.content.decode('ISO-8859-1').encode('utf-8'))
+        file_type = magic.Magic(mime=True).from_buffer(response.content)
 
         # Check if the file is a supported image format
         supported_formats = {'image/jpeg', 'image/png', 'image/gif', 'image/bmp', 'image/webp', 'image/tiff', 'image/heic'}
@@ -47,16 +43,12 @@ def handle_image(update: Update, context: CallbackContext) -> None:
             # Convert the bytes object to a BytesIO object
             image_io = io.BytesIO(response.content)
 
-            # Open the image using Pillow
-            image = Image.open(image_io)
-
-            # Extract GPS coordinates from the image using Pillow
-            gps_info = extract_gps_info(image)
+            # Extract GPS coordinates from the image using exifread
+            gps_info = extract_gps_info(image_io)
 
             # Check if GPSInfo is present
             if gps_info:
-                latitude = gps_info.get('GPSLatitude')
-                longitude = gps_info.get('GPSLongitude')
+                latitude, longitude = gps_info
 
                 # Create a Google Maps link
                 google_maps_link = f'https://www.google.com/maps?q={latitude},{longitude}'
@@ -69,9 +61,6 @@ def handle_image(update: Update, context: CallbackContext) -> None:
         else:
             # If the file is not a supported image format
             update.message.reply_text(f"Please send a valid image. Detected file type: {file_type}")
-    except UnidentifiedImageError:
-        # If the image cannot be identified
-        update.message.reply_text('Cannot identify the image file. Please send a valid image.')
     except Exception as e:
         # Handle other exceptions
         update.message.reply_text(f'Error processing the image: {e}')
