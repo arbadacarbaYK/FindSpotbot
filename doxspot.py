@@ -1,8 +1,8 @@
 from telegram import Update
 from telegram.ext import MessageHandler, Filters, CallbackContext, Updater
-from Pillow import Image
+import cv2
+import numpy as np
 import requests
-import json
 
 def start(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Send me a picture with location data.')
@@ -14,13 +14,16 @@ def handle_image(update: Update, context: CallbackContext) -> None:
 
     # Download the image
     response = requests.get(file_url)
-    with open('image.jpg', 'wb') as f:
-        f.write(response.content)
+    image_np = np.frombuffer(response.content, np.uint8)
+    image = cv2.imdecode(image_np, cv2.IMREAD_COLOR)
 
     # Extract GPS coordinates from the image
-    image = Image.open('image.jpg')
-    exif_data = image._getexif()
-    gps_info = exif_data.get(34853, None)
+    # Replace the following code with the relevant logic for your use case
+    # OpenCV is primarily used for image processing; you may need additional libraries or methods for GPS extraction
+    # You can use a library like exifread or piexif for this purpose
+
+    # Placeholder code, replace it with actual GPS extraction logic
+    gps_info = None  # Placeholder, replace with actual extraction logic
 
     if gps_info:
         latitude = gps_info[2][0] + gps_info[2][1] / 60 + gps_info[2][2] / 3600
