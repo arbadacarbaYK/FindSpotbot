@@ -4,6 +4,7 @@ import requests
 import json
 import os
 import exifread
+import io
 
 def start(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Send me a picture with location data.')
@@ -21,8 +22,11 @@ def handle_image(update: Update, context: CallbackContext) -> None:
     # Download the image
     response = requests.get(file_url)
 
+    # Convert the bytes object to a BytesIO object
+    image_io = io.BytesIO(response.content)
+
     # Extract GPS coordinates from the image using exifread
-    tags = exifread.process_file(response.content)
+    tags = exifread.process_file(image_io)
     
     # Check if GPSInfo tags are present
     if 'GPS GPSLatitude' in tags and 'GPS GPSLongitude' in tags:
@@ -38,6 +42,7 @@ def handle_image(update: Update, context: CallbackContext) -> None:
     else:
         # If GPSInfo tags are not present
         update.message.reply_text('No location data found in the image.')
+
 
 def main() -> None:
     updater = Updater(token=os.getenv("YOUR_BOT_TOKEN"))
