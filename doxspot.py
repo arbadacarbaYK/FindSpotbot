@@ -42,8 +42,6 @@ def handle_image(update: Update, context: CallbackContext) -> None:
         mime = magic.Magic()
         file_type = mime.from_buffer(response.content)
 
-        print(f"Detected file type: {file_type}")
-
         # Check if the file is an image
         if file_type.startswith('image'):
             # Convert the bytes object to a BytesIO object
